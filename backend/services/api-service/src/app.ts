@@ -17,7 +17,8 @@ import { apiRouter } from './routes';
 export function createApp(container: Container): Express {
   const app = express();
   app.disable('x-powered-by');
-  app.set('trust proxy', 1);
+  // Lets req.ip resolve to the real client so per-IP rate limits work behind proxies.
+  app.set('trust proxy', env.TRUST_PROXY_HOPS);
 
   app.use(pinoHttp({ logger: container.logger, autoLogging: { ignore: (req) => req.url === '/api/health' } }));
 
