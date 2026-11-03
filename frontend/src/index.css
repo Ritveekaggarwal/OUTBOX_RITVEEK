@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-white font-sans text-ink-900 antialiased;
+  }
+
+  ::selection {
+    @apply bg-brand-100;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #d4d4d8 transparent;
+  }
+}
+
+/* Tiptap editor content */
+.prose-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  @apply pointer-events-none float-left h-0 text-ink-400;
+}
+
+.prose-editor h1 { @apply mb-2 text-2xl font-bold; }
+.prose-editor h2 { @apply mb-2 text-xl font-semibold; }
+.prose-editor h3 { @apply mb-1.5 text-lg font-semibold; }
+.prose-editor p { @apply mb-2; }
+.prose-editor ul { @apply mb-2 list-disc pl-6; }
+.prose-editor ol { @apply mb-2 list-decimal pl-6; }
+.prose-editor blockquote { @apply mb-2 border-l-4 border-highlight-line bg-highlight-bg/60 py-1 pl-4; }
+.prose-editor code { @apply rounded bg-surface-muted px-1 py-0.5 font-mono text-[13px]; }
+
+/* Rendered email bodies (detail view) */
+.email-body p { @apply mb-3; }
+.email-body h1 { @apply mb-3 text-2xl font-bold; }
+.email-body h2 { @apply mb-3 text-xl font-semibold; }
+.email-body h3 { @apply mb-2 text-lg font-semibold; }
+.email-body ul { @apply mb-3 list-disc pl-6; }
+.email-body ol { @apply mb-3 list-decimal pl-6; }
+.email-body a { @apply text-brand-600 underline; }
+.email-body code { @apply rounded bg-surface-muted px-1 py-0.5 font-mono text-[13px]; }
+.email-body blockquote {
+  @apply mb-3 max-w-2xl rounded-r-lg border-l-4 border-highlight-line bg-highlight-bg px-4 py-3;
+}

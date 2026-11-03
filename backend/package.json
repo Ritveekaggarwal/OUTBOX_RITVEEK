@@ -1,0 +1,25 @@
+{
+  "name": "reachinbox-backend",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "services/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build -w @reachinbox/shared",
+    "db:generate": "npm run db:generate -w @reachinbox/shared",
+    "db:migrate": "npm run db:migrate -w @reachinbox/shared",
+    "db:deploy": "npm run db:deploy -w @reachinbox/shared",
+    "dev": "npm run build:shared && concurrently -k -n api,worker,notify -c blue,green,magenta \"npm run dev -w @reachinbox/api-service\" \"npm run dev -w @reachinbox/email-worker\" \"npm run dev -w @reachinbox/notification-service\"",
+    "build": "npm run build:shared && npm run build -w @reachinbox/api-service -w @reachinbox/email-worker -w @reachinbox/notification-service",
+    "start": "concurrently -k -n api,worker,notify -c blue,green,magenta \"npm run start -w @reachinbox/api-service\" \"npm run start -w @reachinbox/email-worker\" \"npm run start -w @reachinbox/notification-service\"",
+    "typecheck": "npm run build:shared && tsc -p services/api-service --noEmit && tsc -p services/email-worker --noEmit && tsc -p services/notification-service --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "concurrently": "^9.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

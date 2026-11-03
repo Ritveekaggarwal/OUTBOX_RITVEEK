@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EmailStatus {
+  SCHEDULED
+  RATE_LIMITED
+  SENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+model User {
+  id           String            @id @default(uuid())
+  email        String            @unique
+  name         String
+  avatarUrl    String?
+  passwordHash String?
+  googleId     String?           @unique
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  campaigns    Campaign[]
+  emails       Email[]
+  slack        SlackIntegration?
+
+  @@map("users")
+}
+
+/// SMTP identity used to send mail (Ethereal accounts by default).
+model Sender {
+  id          String     @id @default(uuid())
+  email       String     @unique
+  name        String
+  smtpHost    String
+  smtpPort    Int
+  smtpUser    String
+  /// AES-256-GCM encrypted SMTP password
+  smtpPassEnc String
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  campaigns   Campaign[]
+  emails      Email[]
+
+  @@map("senders")
+}
+
+model Campaign {
+  id              String   @id @default(uuid())
+  userId          String
+  senderId        String
+  subject         String
+  body            String   @db.Text
+  startAt         DateTime
+  delayMs         Int
+  hourlyLimit     Int
+  totalRecipients Int
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender          Sender   @relation(fields: [senderId], references: [id])
+  emails          Email[]
+
+  @@index([userId, createdAt])
+  @@map("campaigns")
+}
+
+model Email {
+  id           String      @id @default(uuid())
+  campaignId   String
+  userId       String
+  senderId     String
+  recipient    String
+  subject      String
+  body         String      @db.Text
+  sequence     Int
+  scheduledAt  DateTime
+  status       EmailStatus @default(SCHEDULED)
+  attempts     Int         @default(0)
+  sentAt       DateTime?
+  failedReason String?
+  messageId    String?
+  previewUrl   String?
+  starred      Boolean     @default(false)
+  lockedAt     DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  campaign     Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender       Sender      @relation(fields: [senderId], references: [id])
+
+  /// A campaign can never email the same address twice.
+  @@unique([campaignId, recipient])
+  @@index([userId, status, scheduledAt])
+  @@index([userId, status, sentAt])
+  @@index([status, scheduledAt])
+  @@map("emails")
+}
+
+model SlackIntegration {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  teamId        String
+  teamName      String
+  channel       String
+  /// AES-256-GCM encrypted incoming webhook URL
+  webhookUrlEnc String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("slack_integrations")
+}
